@@ -21,9 +21,19 @@ var height = 600
 type sendMode int
 
 const (
-	imageMode sendMode = 0
-	colorMode sendMode = 1
+	imageMode   sendMode = 0
+	colorMode   sendMode = 1
+	rainbowMode sendMode = 2
 )
+
+var rainbowColors = [6]string{
+	"e40303",
+	"ff8c00",
+	"ffed00",
+	"008026",
+	"004dff",
+	"750787",
+}
 
 func main() {
 	var specifiedMode sendMode
@@ -36,6 +46,8 @@ func main() {
 	} else if len(os.Args[1:]) >= 2 && os.Args[1] == "--color" {
 		specifiedMode = colorMode
 		hexColor = os.Args[2]
+	} else if len(os.Args[1:]) >= 1 && os.Args[1] == "--rainbow" {
+		specifiedMode = rainbowMode
 	} else {
 		fmt.Println("No parameter given.")
 		return
@@ -71,6 +83,13 @@ func main() {
 			fromX := (width / parallelParts) * i
 			toX := fromX + (width / parallelParts)
 			go sendPart(fromX, toX, 0, height, &wg, hexColor)
+		}
+	} else if specifiedMode == rainbowMode {
+		for i, color := range rainbowColors {
+			wg.Add(1)
+			fromY := (height / len(rainbowColors)) * i
+			toY := fromY + (height / len(rainbowColors))
+			go sendPart(0, width, fromY, toY, &wg, color)
 		}
 	}
 
